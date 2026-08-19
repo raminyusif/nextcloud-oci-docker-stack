@@ -1,0 +1,55 @@
+version: '3.7'
+services:
+  nextcloud:
+    image: nextcloud:31.0.5
+    container_name: nextcloud
+    restart: always
+    volumes:
+      - /mnt/nextcloud/html:/var/www/html
+      - /mnt/nextcloud/config:/var/www/html/config
+      - /mnt/nextcloud/data:/var/www/html/data
+    depends_on:
+      - db
+    environment:
+      - VIRTUAL_HOST=your-domain.com
+      - LETSENCRYPT_HOST=your-domain.com
+      - LETSENCRYPT_EMAIL=your-email@example.com
+    networks:
+      - nextcloud_net
+
+  db:
+    image: mariadb:10.11
+    container_name: nextcloud_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    networks:
+      - nextcloud_net
+
+  caddy:
+    image: caddy
+    container_name: caddy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+    environment:
+      - ACME_AGREE=true
+    restart: always
+    networks:
+      - nextcloud_net
+
+volumes:
+  nextcloud_data:
+    external: true
+  db_data:
+    driver: local
+
+networks:
+  nextcloud_net:

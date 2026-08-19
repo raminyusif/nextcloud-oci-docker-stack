@@ -1,0 +1,13 @@
+your-domain.com {
+    redir /.well-known/carddav /remote.php/dav/ 301
+    redir /.well-known/caldav /remote.php/dav/ 301
+
+    reverse_proxy nextcloud:80
+
+    # Add HSTS header
+    header {
+        Strict-Transport-Security "max-age=15552000; includeSubDomains; preload"
+    }
+
+    tls your-email@example.com
+}
